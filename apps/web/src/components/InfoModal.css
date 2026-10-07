@@ -1,0 +1,128 @@
+.info-modal {
+  max-width: 880px;
+  width: calc(100vw - 32px);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+
+.info-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0 12px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.info-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 8px 12px;
+  font: inherit;
+  color: var(--color-navy-ink-muted);
+  cursor: pointer;
+}
+
+.info-tab-active {
+  color: var(--color-navy);
+  border-bottom-color: var(--color-terracotta);
+  font-weight: 600;
+}
+
+.info-hint {
+  margin: 0 0 12px;
+  color: var(--color-navy-ink-muted);
+  font-size: 0.95rem;
+}
+
+.info-table-wrap {
+  overflow-x: auto;
+}
+
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.info-table th,
+.info-table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--color-border-subtle);
+  vertical-align: top;
+}
+
+.info-table th {
+  color: var(--color-navy-ink-muted);
+  font-weight: 600;
+}
+
+.info-doc-type {
+  color: var(--color-navy-ink-muted);
+  font-size: 0.8rem;
+}
+
+.info-endpoint-group h3 {
+  margin: 16px 0 8px;
+  font-size: 1rem;
+  color: var(--color-navy);
+}
+
+.info-endpoint-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.info-endpoint {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.info-endpoint p {
+  margin: 4px 0;
+  font-size: 0.9rem;
+}
+
+.info-endpoint-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.info-endpoint-meta {
+  color: var(--color-navy-ink-muted);
+  font-size: 0.85rem;
+}
+
+.info-method {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  color: var(--color-surface-raised);
+  background: var(--color-navy);
+}
+
+.info-method-post {
+  background: var(--color-terracotta-deep);
+}
+
+.info-method-put {
+  background: var(--color-teal-deep);
+}
+
+.app-shell-info-button {
+  background: none;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  font: inherit;
+  color: var(--color-navy);
+  cursor: pointer;
+}
+
+.app-shell-info-button:hover {
+  border-color: var(--color-navy);
+}

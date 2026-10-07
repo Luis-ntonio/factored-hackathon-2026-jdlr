@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { AuthProvider } from "./auth/AuthContext";
 import { ChatLaunchProvider } from "./chat/ChatLaunchContext";
 import { AuthPanel } from "./components/AuthPanel";
+import { InfoModal } from "./components/InfoModal";
 import { LoginModal } from "./components/LoginModal";
 import { ChatWidget } from "./components/ChatWidget";
 import { ProductShowcase } from "./components/ProductShowcase";
@@ -17,6 +19,8 @@ import { ProductShowcase } from "./components/ProductShowcase";
  * hay conversación todavía acá para saber el idioma real) -- mismo default
  * que el resto del sistema antes del primer turno. */
 function AppShell() {
+  const [infoOpen, setInfoOpen] = useState(true);
+
   return (
     <div className="app-shell">
       {/* <header> real (landmark "banner") -- antes era un <div>, gap
@@ -26,11 +30,15 @@ function AppShell() {
           rol "banner" por defecto, así que los dos <header> conviven sin
           landmarks duplicados. */}
       <header className="app-shell-topbar">
+        <button type="button" className="app-shell-info-button" onClick={() => setInfoOpen(true)}>
+          Info
+        </button>
         <AuthPanel language="es" />
       </header>
       <main>
         <ProductShowcase />
       </main>
+      {infoOpen && <InfoModal onClose={() => setInfoOpen(false)} />}
       <LoginModal language="es" />
       <ChatWidget />
     </div>

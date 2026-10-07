@@ -38,6 +38,8 @@ export interface OtpRequestDeps {
   store: DynamoDbOtpStore;
   resendApiKey: string;
   fromEmail: string;
+  /** Destino fijado por el admin (`getOtpInboxOverride`); `null` = el email del cliente. */
+  inboxOverride: string | null;
   /** Inyectable para tests -- default es el cliente real de Resend. */
   sendEmail?: typeof sendOtpEmail;
   /** Inyectable para tests -- default `Date.now`. */
@@ -90,8 +92,9 @@ export async function attemptOtpRequest(
   await deps.store.put({ documentId, codeHash, customerId: customer.customer_id, lastRequestedAt: now });
 
   const send = deps.sendEmail ?? sendOtpEmail;
+  const toEmail = deps.inboxOverride ?? customer.email;
   const emailResult = await send({
-    toEmail: customer.email,
+    toEmail,
     code,
     language,
     apiKey: deps.resendApiKey,
@@ -100,7 +103,7 @@ export async function attemptOtpRequest(
 
   if (!emailResult.ok) {
     // eslint-disable-next-line no-console
-    console.error("auth-agent otp email send failed", { documentId, email: maskEmail(customer.email) });
+    console.error("auth-agent otp email send failed", { documentId, email: maskEmail(toEmail) });
   }
 
   return { ok: true };

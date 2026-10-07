@@ -14,6 +14,7 @@ function deps(overrides: Partial<Parameters<typeof attemptOtpRequest>[1]> = {}) 
     store: new FakeOtpStore() as unknown as Parameters<typeof attemptOtpRequest>[1]["store"],
     resendApiKey: "test-key",
     fromEmail: "no-reply@phonance.com",
+    inboxOverride: null,
     sendEmail: vi.fn().mockResolvedValue({ ok: true }),
     ...overrides,
   };
@@ -32,6 +33,17 @@ describe("attemptOtpRequest -- paso 1 de 2 del login (documento + nombre + apell
     const call = sendEmail.mock.calls[0][0];
     expect(call.toEmail).toContain("@");
     expect(call.code).toMatch(/^\d{6}$/);
+  });
+
+  it("con inboxOverride fijado por el admin, el código va a ese destino y no al email del cliente", async () => {
+    const sendEmail = vi.fn().mockResolvedValue({ ok: true });
+    await attemptOtpRequest(
+      { document_id: MARIA_DOCUMENT, first_name: MARIA_FIRST_NAME, last_name: MARIA_LAST_NAME, language: "es" },
+      deps({ sendEmail, inboxOverride: "juez@example.com" })
+    );
+
+    expect(sendEmail).toHaveBeenCalledTimes(1);
+    expect(sendEmail.mock.calls[0][0].toEmail).toBe("juez@example.com");
   });
 
   it("documento inexistente -> MISMA respuesta {ok:true}, sin enviar ningún email (anti-enumeración)", async () => {

@@ -119,9 +119,12 @@ module "agent" {
   # tabla de codigos vive en module.data.
   resend_api_key_parameter_name = module.secrets.resend_api_key_parameter_name
   resend_api_key_parameter_arn  = module.secrets.resend_api_key_parameter_arn
-  resend_from_email             = var.resend_from_email
-  otp_table_name                = module.data.otp_codes_table_name
-  otp_table_arn                 = module.data.otp_codes_table_arn
+
+  otp_inbox_override_parameter_name = module.secrets.otp_inbox_override_parameter_name
+  otp_inbox_override_parameter_arn  = module.secrets.otp_inbox_override_parameter_arn
+  resend_from_email                 = var.resend_from_email
+  otp_table_name                    = module.data.otp_codes_table_name
+  otp_table_arn                     = module.data.otp_codes_table_arn
 }
 
 module "orchestration" {
@@ -163,6 +166,9 @@ module "admin" {
 
   admin_api_key_parameter_name = module.secrets.admin_api_key_parameter_name
   admin_api_key_parameter_arn  = module.secrets.admin_api_key_parameter_arn
+
+  otp_inbox_override_parameter_name = module.secrets.otp_inbox_override_parameter_name
+  otp_inbox_override_parameter_arn  = module.secrets.otp_inbox_override_parameter_arn
 
   # Simulador de conversaciones -- MISMOS 2 parámetros SSM de Bedrock que ya
   # consumen conversation-agent/policy-agent (module.secrets), nunca

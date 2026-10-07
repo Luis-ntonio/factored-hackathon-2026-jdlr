@@ -138,3 +138,43 @@ export async function getOtpConfig(options: GetAuthConfigOptions = {}): Promise<
 export function resetOtpConfigCacheForTests(): void {
   cachedOtpConfig = undefined;
 }
+
+const OTP_INBOX_NO_OVERRIDE = "none";
+const OTP_INBOX_CACHE_TTL_MS = 30_000;
+
+let cachedOtpInbox: { value: string | null; fetchedAt: number } | undefined;
+
+/**
+ * Destino de los códigos OTP cuando el admin lo fijó (`PUT /admin/otp-inbox`,
+ * ver services/admin-agent/src/otp-inbox.ts). `null` = sin override, cada
+ * cliente recibe el código en su propio email. Si SSM no responde, cae a
+ * `null` (nunca bloquea el login), con caché corta para que un cambio se
+ * note en ~30 segundos sin redeploy.
+ */
+export async function getOtpInboxOverride(options: GetAuthConfigOptions = {}): Promise<string | null> {
+  const now = Date.now();
+  if (cachedOtpInbox && now - cachedOtpInbox.fetchedAt < OTP_INBOX_CACHE_TTL_MS) {
+    return cachedOtpInbox.value;
+  }
+
+  const paramName = process.env.OTP_INBOX_PARAM_NAME;
+  if (!paramName) return null;
+
+  const ssmClient = options.ssmClient ?? new SSMClient({});
+  try {
+    const result = await ssmClient.send(new GetParameterCommand({ Name: paramName }));
+    const value = result.Parameter?.Value;
+    const inbox = value && value !== OTP_INBOX_NO_OVERRIDE ? value : null;
+    cachedOtpInbox = { value: inbox, fetchedAt: now };
+    return inbox;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error("auth-agent otp inbox override read failed", { paramName, error: String(error) });
+    return null;
+  }
+}
+
+/** Solo para tests -- resetea el caché en memoria entre casos. */
+export function resetOtpInboxCacheForTests(): void {
+  cachedOtpInbox = undefined;
+}

@@ -768,7 +768,7 @@ resource "aws_iam_role_policy" "auth_agent_ssm" {
         Sid      = "ReadSessionTokenSecret"
         Effect   = "Allow"
         Action   = ["ssm:GetParameter"]
-        Resource = [var.session_token_secret_parameter_arn, var.resend_api_key_parameter_arn]
+        Resource = [var.session_token_secret_parameter_arn, var.resend_api_key_parameter_arn, var.otp_inbox_override_parameter_arn]
       },
       {
         Sid      = "DecryptSessionTokenSecret"
@@ -822,6 +822,7 @@ resource "aws_lambda_function" "auth_agent" {
       SESSION_TOKEN_SECRET_PARAM_NAME = var.session_token_secret_parameter_name
       RESEND_API_KEY_PARAM_NAME       = var.resend_api_key_parameter_name
       RESEND_FROM_EMAIL               = var.resend_from_email
+      OTP_INBOX_PARAM_NAME            = var.otp_inbox_override_parameter_name
       OTP_TABLE_NAME                  = var.otp_table_name
     }
   }

@@ -241,11 +241,12 @@ resource "aws_lambda_function" "admin_agent" {
       CASE_STORE_TABLE_NAME        = var.case_store_table_name
       STATE_MACHINE_LOG_GROUP_NAME = var.state_machine_log_group_name
       ADMIN_API_KEY_PARAM_NAME     = var.admin_api_key_parameter_name
+      OTP_INBOX_PARAM_NAME         = var.otp_inbox_override_parameter_name
       # Simulador de conversaciones.
-      BEDROCK_MODEL_ID_PARAM_NAME  = var.bedrock_model_id_ssm_parameter_name
-      BEDROCK_REGION_PARAM_NAME    = var.bedrock_region_ssm_parameter_name
-      CHAT_API_URL                 = var.chat_api_endpoint
-      AUTH_LOGIN_URL               = var.auth_login_endpoint
+      BEDROCK_MODEL_ID_PARAM_NAME = var.bedrock_model_id_ssm_parameter_name
+      BEDROCK_REGION_PARAM_NAME   = var.bedrock_region_ssm_parameter_name
+      CHAT_API_URL                = var.chat_api_endpoint
+      AUTH_LOGIN_URL              = var.auth_login_endpoint
       # Literal (no `aws_lambda_function.admin_agent.function_name` -- un
       # recurso no puede referenciar su propio atributo dentro de su propio
       # bloque): MISMA expresión que `function_name` arriba, para el

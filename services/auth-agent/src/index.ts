@@ -1,6 +1,6 @@
 import type { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import { CUSTOMERS } from "@banking-agent/transaction-agent/dist/data/mock-core-banking";
-import { getAuthConfig, getOtpConfig } from "./config";
+import { getAuthConfig, getOtpConfig, getOtpInboxOverride } from "./config";
 import { attemptOtpRequest, type OtpRequestRequest } from "./otp/request";
 import { attemptOtpVerify, type OtpVerifyRequest } from "./otp/verify";
 import { buildOtpDocClientFromEnv, DynamoDbOtpStore } from "./otp/store";
@@ -74,10 +74,12 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
     // ver docstring de arriba.
     const body = parseBody<OtpRequestRequest>(event);
     const otpConfig = await getOtpConfig();
+    const inboxOverride = await getOtpInboxOverride();
     const result = await attemptOtpRequest(body, {
       customers: CUSTOMERS,
       store: getOtpStore(otpConfig.otpTableName),
       resendApiKey: otpConfig.resendApiKey,
+      inboxOverride,
       fromEmail: otpConfig.resendFromEmail,
     });
     return jsonResponse(result);

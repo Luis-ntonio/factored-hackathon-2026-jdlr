@@ -66,6 +66,56 @@ docstring de `real-customers.ts`).
 > Ver `docs/EVALUATION-CRITERIA.md` para cómo este repo responde a cada uno
 > de los 6 puntos que el PDF pide demostrar explícitamente.
 
+## Para evaluadores: usuarios de prueba y endpoints
+
+Al entrar a la demo se abre un panel **Info** (también se reabre desde el
+botón "Info" del header) con dos pestañas: los usuarios de prueba y todos
+los endpoints. Lo mismo queda documentado acá.
+
+**Login:** siempre de 2 pasos. Elegí un usuario de la tabla, cargá documento,
+nombre y apellido tal como figuran, y pedí el código de 6 dígitos al equipo
+(los códigos se envían al inbox del equipo de la hackathon, no a su email
+personal). El código es de un solo uso y vence.
+
+| Nombre | Documento | Segmento | Qué probar |
+| --- | --- | --- | --- |
+| María Fernanda López Torres | CURP `LOTM900101MDFPRR09` | Premium (cliente estrella) | Productos y elegibilidad |
+| Carlos Andrés Restrepo Gómez | CC `1020304050` | Plus | Productos y elegibilidad |
+| Julieta Fernández Acosta | DNI `34567890` | Basic | Productos y elegibilidad |
+| Roberto Gómez Sánchez | CURP `GORS980512HDFMNB03` | Student | Productos y elegibilidad |
+| Ana Angélica Romero López | DNI `39168655` | Plus (dataset real) | Disputar "No reconozco un cargo de $173.01 en Cine Premium" |
+| Eduardo Giménez Vega | DNI `55181511` | Basic (dataset real) | Disputar "No reconozco un cargo de $139278.93 en Restaurante El Buen Sabor" |
+
+Base URL: `https://kr49s6ij26.execute-api.us-east-1.amazonaws.com`
+
+| Método | Ruta | Para qué | Body | Acceso |
+| --- | --- | --- | --- | --- |
+| POST | `/chat` | Un turno del agente | `{ caseId, turnId, message, sessionToken?, selectedTransactionId? }` | Público (disputas y elegibilidad piden `sessionToken`) |
+| POST | `/auth/login` | Paso 1: envía el código por email | `{ document_id, first_name, last_name, language }` | Público |
+| POST | `/auth/otp/request` | Reenvía el código (igual que `/auth/login`) | `{ document_id, first_name, last_name, language }` | Público |
+| POST | `/auth/otp/verify` | Paso 2: valida el código y devuelve `sessionToken` (30 min) | `{ document_id, code }` | Público |
+| GET | `/admin/otp-inbox` | Lee a qué email llegan hoy los códigos OTP | — | Clave de admin (`x-admin-key`) |
+| PUT | `/admin/otp-inbox` | Fija a qué email llegan los códigos OTP (efecto en ~30 s, sin redeploy) | `{ email }` | Clave de admin (`x-admin-key`) |
+| GET | `/admin/conversations` | Lista de conversaciones | — | Clave de admin (`x-admin-key`) |
+| GET | `/admin/conversations/{caseId}/trace` | Traza completa de un caso | — | Clave de admin |
+| POST | `/admin/simulations` | Dispara una simulación | `{ profileId, objectiveId }` | Clave de admin |
+| GET | `/admin/simulations` | Lista corridas de simulación | — | Clave de admin |
+| GET | `/admin/simulations/{runId}` | Detalle de una corrida | — | Clave de admin |
+
+**Para recibir los códigos en tu propio email:** pedí al equipo la clave de
+admin y fijá el destino una sola vez:
+
+```bash
+curl -X PUT https://kr49s6ij26.execute-api.us-east-1.amazonaws.com/admin/otp-inbox \
+  -H "content-type: application/json" -H "x-admin-key: <CLAVE>" \
+  -d '{"email":"tu@email.com"}'
+```
+
+Desde ese momento, todos los códigos de login llegan a ese email. Para volver
+al comportamiento normal (cada cliente recibe el suyo) no hay endpoint
+público: pedinos que lo restauremos. Los demás `/admin/*` (conversaciones,
+trazas, simulaciones) también requieren la clave.
+
 ## Por dónde empezar
 
 | Si querés... | Mirá... |

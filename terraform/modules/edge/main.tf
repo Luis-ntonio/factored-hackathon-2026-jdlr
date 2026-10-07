@@ -44,7 +44,7 @@ resource "aws_apigatewayv2_api" "this" {
     # mismo motivo: un header custom (no "simple") SIEMPRE dispara
     # preflight CORS, y sin declararlo acá el navegador bloquea la
     # respuesta real aunque el Lambda la devuelva bien.
-    allow_methods = ["POST", "GET", "OPTIONS"]
+    allow_methods = ["POST", "GET", "PUT", "OPTIONS"]
     allow_headers = ["content-type", "x-admin-key"]
     max_age       = 300
   }

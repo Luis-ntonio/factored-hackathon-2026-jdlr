@@ -12,6 +12,8 @@ import { findSimulationObjective } from "./simulation/objectives";
 import { getSimulationRun, listSimulationRuns, putSimulationRun, type SimulationRunItem } from "./simulation/store";
 import { runSimulation } from "./simulation/run-simulation";
 import { getSimulationBedrockConfig } from "./simulation/bedrock-config";
+import { SSMClient } from "@aws-sdk/client-ssm";
+import { getOtpInbox, isValidOtpInboxEmail, setOtpInbox } from "./otp-inbox";
 
 /**
  * Handler de Lambda para las rutas del dashboard de admin, despachadas por
@@ -91,6 +93,25 @@ function jsonResponse(statusCode: number, body: unknown): APIGatewayProxyResultV
   return { statusCode, headers: { "content-type": "application/json" }, body: JSON.stringify(body) };
 }
 
+let ssmClient: SSMClient | undefined;
+
+function getSsmClient(): SSMClient {
+  if (!ssmClient) {
+    ssmClient = new SSMClient({});
+  }
+  return ssmClient;
+}
+
+function parseEmailFromBody(event: APIGatewayProxyEventV2): unknown {
+  if (!event.body) return undefined;
+  try {
+    const raw = event.isBase64Encoded ? Buffer.from(event.body, "base64").toString("utf-8") : event.body;
+    return (JSON.parse(raw) as { email?: unknown }).email;
+  } catch {
+    return undefined;
+  }
+}
+
 async function isAuthorized(event: APIGatewayProxyEventV2): Promise<boolean> {
   const providedKey = event.headers?.["x-admin-key"] ?? event.headers?.["X-Admin-Key"];
   if (!providedKey) return false;
@@ -159,6 +180,25 @@ export async function handler(
       const result = await getConversationTrace(getLogsClient(), logGroupName, caseId);
       if (!result.ok) return jsonResponse(503, { ok: false, reason: "logs_unavailable_or_invalid_case_id" });
       return jsonResponse(200, { ok: true, turns: result.value });
+    }
+
+    if (path === "/admin/otp-inbox" && method === "GET") {
+      const paramName = process.env.OTP_INBOX_PARAM_NAME;
+      if (!paramName) return jsonResponse(500, { ok: false, reason: "config_missing" });
+
+      const inbox = await getOtpInbox({ paramName, ssmClient: getSsmClient() });
+      return jsonResponse(200, { ok: true, inbox });
+    }
+
+    if (path === "/admin/otp-inbox" && method === "PUT") {
+      const paramName = process.env.OTP_INBOX_PARAM_NAME;
+      if (!paramName) return jsonResponse(500, { ok: false, reason: "config_missing" });
+
+      const email = parseEmailFromBody(event);
+      if (!isValidOtpInboxEmail(email)) return jsonResponse(400, { ok: false, reason: "invalid_email" });
+
+      await setOtpInbox(email, { paramName, ssmClient: getSsmClient() });
+      return jsonResponse(200, { ok: true, inbox: email });
     }
 
     if (path === "/admin/simulations" && method === "POST") {
